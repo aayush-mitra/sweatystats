@@ -5,7 +5,7 @@ const navs = document.querySelectorAll(".nav-item");
 let data = {};
 let selected;
 
-updateSelected('Overall');
+updateSelected('Network');
 navs.forEach(button => {
   button.addEventListener('click', (e) => {
     updateSelected(button.firstElementChild.firstElementChild.innerHTML);
@@ -29,10 +29,26 @@ function updateSelected(type) {
   }
 }
 
-function setData(d) {
+function setData(d, func) {
+  let rank1;
+  if (d.rank && d.rank !== 'NORMAL') {
+    rank1 = d.rank
+  } else if (d.monthlyPackageRank && d.monthlyPackageRank !== "NONE") {
+    rank1 = d.monthlyPackageRank
+  } else if (d.newPackageRank && d.newPackageRank !== "NONE") {
+    rank1 = d.newPackageRank
+  } else if (d.packageRank && d.packageRank !== "NONE") {
+    rank1 = d.packageRank
+  } else {
+    rank1 = 'NON'
+  }
 
   data = {
     name: d.displayname,
+    rank: rank1 === "SUPERSTAR" ? "MVP_PLUS_PLUS" : rank1,
+    karma: d.karma,
+    lastLogin: d.lastLogin,
+    uuid: d.uuid,
     nameHistory: d.knownAliases,
     level: Math.floor((Math.sqrt((2 * d.networkExp) + 30625) / 50) - 2.5),
     stats: {
@@ -113,15 +129,49 @@ function setData(d) {
       }
     }
   };
-  console.log(data);
+  //console.log(data);
+  func();
 }
 
-fetch(`https://api.hypixel.net/player?key=d5db2401-3d43-4ece-a681-a013df180a3c&name=${name}`).then((res, err) => res.json()).then(data => {
-  console.log(data);
-  if (data.success === true) {
-    setData(data.player);
+fetch(`https://api.hypixel.net/player?key=d5db2401-3d43-4ece-a681-a013df180a3c&name=${name}`).then((res, err) => res.json()).then(data1 => {
+  //console.log(data1);
+  if (data1.player !== null) {
+    setData(data1.player, () => {
+      fetch(`https://api.hypixel.net/status?key=d5db2401-3d43-4ece-a681-a013df180a3c&uuid=${data.uuid}`).then((res, err) => res.json().then(response => {
+        data.status = response.session;
+        fetch(`https://api.hypixel.net/friends?key=d5db2401-3d43-4ece-a681-a013df180a3c&uuid=${data.uuid}`).then((res, err) => res.json()).then(friends => {
+          data.friends = friends.records.length;
+          fetch(`https://api.hypixel.net/guild?key=d5db2401-3d43-4ece-a681-a013df180a3c&player=${data.uuid}`).then((res, err) => res.json()).then(guild => {
+            //console.log(guild);
+            data.guild = guild;
+            updateInterface(data);
+          });
+        });
+      }))
+    });
+
   } else {
     console.log("Success: False");
+    window.location.replace('index.html');
   }
 
 }).catch(err => console.log(err))
+
+
+const updateInterface = (stuff) => {
+  const elems = document.getElementById(selected).children;
+  console.log(stuff);
+  elems[0].innerHTML = stuff.name;
+  elems[2].firstElementChild.innerHTML = stuff.rank;
+  elems[3].firstElementChild.innerHTML = stuff.level;
+  elems[4].firstElementChild.innerHTML = stuff.nameHistory.toString();
+  elems[5].firstElementChild.innerHTML = stuff.karma;
+  elems[6].firstElementChild.innerHTML = stuff.lastLogin;
+  elems[8].firstElementChild.innerHTML = stuff.guild.guild.name;
+  elems[9].firstElementChild.innerHTML = stuff.guild.guild.members.length;
+  if (stuff.status.online === false) {
+    elems[12].firstElementChild.innerHTML = 'offline';
+  } else {
+    elems[12].firstElementChild.innerHTML = `Online, playing: ${stuff.status.gameType}, mode: ${stuff.status.mode}`;
+  }
+};

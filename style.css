@@ -213,3 +213,14 @@ footer .container p {
   border-radius: 10px;
   padding: 20px;
 }
+
+#Network h1, #Network h2, #Network h3, #Network h4 {
+  padding: 10px;
+  color: black;
+  font-weight: 900;
+}
+
+#Network span {
+  font-weight: normal;
+  color: #333;
+}
