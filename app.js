@@ -1,5 +1,6 @@
 const urlParams = new URLSearchParams(window.location.search);
 const name = urlParams.get('name');
+document.querySelectorAll('title')[0].innerHTML = `${name} | SweatyStats`
 const navs = document.querySelectorAll(".nav-item");
 
 let data = {};
@@ -161,13 +162,13 @@ fetch(`https://api.hypixel.net/player?key=d5db2401-3d43-4ece-a681-a013df180a3c&n
 const updateInterface = (stuff) => {
   const elems = document.getElementById(selected).children;
   console.log(stuff);
-  elems[0].innerHTML = stuff.name;
+  elems[0].innerHTML = stuff.name + ` [${stuff.guild.guild.tag}]`;
   elems[2].firstElementChild.innerHTML = stuff.rank;
   elems[3].firstElementChild.innerHTML = stuff.level;
   elems[4].firstElementChild.innerHTML = stuff.nameHistory.join(', ');
   elems[5].firstElementChild.innerHTML = stuff.karma;
   elems[6].firstElementChild.innerHTML = stuff.lastLogin;
-  elems[8].firstElementChild.innerHTML = stuff.guild.guild.name;
+  elems[8].firstElementChild.innerHTML = stuff.guild.guild.name ;
   elems[9].firstElementChild.innerHTML = stuff.guild.guild.members.length;
   if (stuff.status.online === false) {
     elems[12].firstElementChild.innerHTML = 'offline';
