@@ -123,7 +123,115 @@ const updateInterface = (stuff) => {
     elems[5].children[1].children[11].children[6].innerHTML = stuff.stats.bedwars.overall.bblr;
     
     
+  } else if (selected === "Skywars") {
+    const elems = document.getElementById(selected).children;
+    elems[0].innerHTML = stuff.name + `[${stuff.guild.guild.tag}] - Skywars`;
+    elems[2].firstElementChild.innerHTML = stuff.stats.skywars.coins;
+    elems[3].firstElementChild.innerHTML = stuff.stats.skywars.level;
+    elems[4].firstElementChild.innerHTML = stuff.stats.skywars.prestige;
+    //kills
+    elems[5].children[1].firstElementChild.children[1].innerHTML = stuff.stats.skywars.solonormal.kills;
+    elems[5].children[1].firstElementChild.children[2].innerHTML = stuff.stats.skywars.soloinsane.kills;
+    elems[5].children[1].firstElementChild.children[3].innerHTML = stuff.stats.skywars.teamnormal.kills;
+    elems[5].children[1].firstElementChild.children[4].innerHTML = stuff.stats.skywars.teaminsane.kills;
+    elems[5].children[1].firstElementChild.children[5].innerHTML = stuff.stats.skywars.ranked.kills;
+    elems[5].children[1].firstElementChild.children[6].innerHTML = stuff.stats.skywars.overall.kills;
+    //kills
+    elems[5].children[1].children[1].children[1].innerHTML = stuff.stats.skywars.solonormal.deaths;
+    elems[5].children[1].children[1].children[2].innerHTML = stuff.stats.skywars.soloinsane.deaths;
+    elems[5].children[1].children[1].children[3].innerHTML = stuff.stats.skywars.teamnormal.deaths;
+    elems[5].children[1].children[1].children[4].innerHTML = stuff.stats.skywars.teaminsane.deaths;
+    elems[5].children[1].children[1].children[5].innerHTML = stuff.stats.skywars.ranked.deaths;
+    elems[5].children[1].children[1].children[6].innerHTML = stuff.stats.skywars.overall.deaths;
+    //kills
+    elems[5].children[1].children[2].children[1].innerHTML = stuff.stats.skywars.solonormal.kdr;
+    elems[5].children[1].children[2].children[2].innerHTML = stuff.stats.skywars.soloinsane.kdr;
+    elems[5].children[1].children[2].children[3].innerHTML = stuff.stats.skywars.teamnormal.kdr;
+    elems[5].children[1].children[2].children[4].innerHTML = stuff.stats.skywars.teaminsane.kdr;
+    elems[5].children[1].children[2].children[5].innerHTML = stuff.stats.skywars.ranked.kdr;
+    elems[5].children[1].children[2].children[6].innerHTML = stuff.stats.skywars.overall.kdr;
+    //kills
+    elems[5].children[1].children[3].children[1].innerHTML = stuff.stats.skywars.solonormal.wins;
+    elems[5].children[1].children[3].children[2].innerHTML = stuff.stats.skywars.soloinsane.wins;
+    elems[5].children[1].children[3].children[3].innerHTML = stuff.stats.skywars.teamnormal.wins;
+    elems[5].children[1].children[3].children[4].innerHTML = stuff.stats.skywars.teaminsane.wins;
+    elems[5].children[1].children[3].children[5].innerHTML = stuff.stats.skywars.ranked.wins;
+    elems[5].children[1].children[3].children[6].innerHTML = stuff.stats.skywars.overall.wins;
+    //kills
+    elems[5].children[1].children[4].children[1].innerHTML = stuff.stats.skywars.solonormal.losses;
+    elems[5].children[1].children[4].children[2].innerHTML = stuff.stats.skywars.soloinsane.losses;
+    elems[5].children[1].children[4].children[3].innerHTML = stuff.stats.skywars.teamnormal.losses;
+    elems[5].children[1].children[4].children[4].innerHTML = stuff.stats.skywars.teaminsane.losses;
+    elems[5].children[1].children[4].children[5].innerHTML = stuff.stats.skywars.ranked.losses;
+    elems[5].children[1].children[4].children[6].innerHTML = stuff.stats.skywars.overall.losses;
+    //kills
+    elems[5].children[1].children[5].children[1].innerHTML = stuff.stats.skywars.solonormal.wlr;
+    elems[5].children[1].children[5].children[2].innerHTML = stuff.stats.skywars.soloinsane.wlr;
+    elems[5].children[1].children[5].children[3].innerHTML = stuff.stats.skywars.teamnormal.wlr;
+    elems[5].children[1].children[5].children[4].innerHTML = stuff.stats.skywars.teaminsane.wlr;
+    elems[5].children[1].children[5].children[5].innerHTML = stuff.stats.skywars.ranked.wlr;
+    elems[5].children[1].children[5].children[6].innerHTML = stuff.stats.skywars.overall.wlr;
   }
+};
+
+const skywarslvl = (xp) => {
+  var xps = [0, 20, 70, 150, 250, 500, 1000, 2000, 3500, 6000, 10000, 15000];
+  //let xp = d.stats.SkyWars.skywars_experience;
+  let exactLevel = 0;
+  let prestige = '';
+  if (xp >= 15000) {
+      exactLevel = (xp - 15000) / 10000 + 12;
+      // Calculate the exactLevel for players whose level is 12 or above.
+  } else {
+    for (i = 0; i < xps.length; i++) {
+    // Loop through the xps array and determine the integer value of the player's level.
+      if (xp < xps[i]) {
+          exactLevel = i + (xp - xps[i-1]) / (xps[i] - xps[i-1]);
+          break;
+          // If xp < xps[i], the integer value of level is found. Hence, calculate the exactLevel and stop the loop.
+      }
+    }
+  }
+
+  switch(true) {
+    case exactLevel < 5:
+      prestige = 'NON'
+      break;
+    case exactLevel < 10:
+      prestige = 'Iron'
+      break;
+    case exactLevel < 15:
+      prestige = 'Gold'
+      break;
+    case exactLevel < 20:
+      prestige = 'Diamond'
+      break;
+    case exactLevel < 25:
+      prestige = 'Emerald'
+      break;
+    case exactLevel < 30:
+      prestige = 'Sapphire'
+      break;
+    case exactLevel < 35:
+      prestige = 'Ruby'
+      break;
+    case exactLevel < 40:
+      prestige = 'Crystal'
+      break;
+    case exactLevel < 45:
+      prestige = 'Opal'
+      break;
+    case exactLevel < 50:
+      prestige = 'Amethyst'
+      break;
+    case exactLevel >= 50:
+      prestige = 'Rainbow'
+      break;
+      
+          
+  }
+
+  return [exactLevel, prestige];
 };
 
 
@@ -142,6 +250,8 @@ function updateSelected(type) {
     }
   }
   updateInterface(data);
+
+
 }
 
 function setData(d, func) {
@@ -255,10 +365,63 @@ function setData(d, func) {
           bedslost: d.stats.Bedwars.beds_lost_bedwars,
           bblr: (d.stats.Bedwars.beds_broken_bedwars / d.stats.Bedwars.beds_lost_bedwars).toFixed(2)
         }
+      },
+      skywars: {
+        level: Math.floor(skywarslvl(d.stats.SkyWars.skywars_experience)[0]),
+        prestige: skywarslvl(d.stats.SkyWars.skywars_experience)[1],
+        coins: d.stats.SkyWars.coins,
+        solonormal: {
+          kills: d.stats.SkyWars.kills_solo_normal,
+          deaths: d.stats.SkyWars.deaths_solo_normal,
+          kdr: (d.stats.SkyWars.kills_solo_normal / d.stats.SkyWars.deaths_solo_normal).toFixed(2),
+          wins: d.stats.SkyWars.wins_solo_normal,
+          losses: d.stats.SkyWars.losses_solo_normal,
+          wlr: (d.stats.SkyWars.kills_solo_normal / d.stats.SkyWars.losses_solo_normal).toFixed(2)
+        },
+        soloinsane: {
+          kills: d.stats.SkyWars.kills_solo_insane,
+          deaths: d.stats.SkyWars.deaths_solo_insane,
+          kdr: (d.stats.SkyWars.kills_solo_insane / d.stats.SkyWars.deaths_solo_insane).toFixed(2),
+          wins: d.stats.SkyWars.wins_solo_insane,
+          losses: d.stats.SkyWars.losses_solo_insane,
+          wlr: (d.stats.SkyWars.kills_solo_insane / d.stats.SkyWars.losses_solo_insane).toFixed(2)
+        },
+        teamnormal: {
+          kills: d.stats.SkyWars.kills_team_normal,
+          deaths: d.stats.SkyWars.deaths_team_normal,
+          kdr: (d.stats.SkyWars.kills_team_normal / d.stats.SkyWars.deaths_team_normal).toFixed(2),
+          wins: d.stats.SkyWars.wins_team_normal,
+          losses: d.stats.SkyWars.losses_team_normal,
+          wlr: (d.stats.SkyWars.kills_team_normal / d.stats.SkyWars.losses_team_normal).toFixed(2)
+        },
+        teaminsane: {
+          kills: d.stats.SkyWars.kills_team_insane,
+          deaths: d.stats.SkyWars.deaths_team_insane,
+          kdr: (d.stats.SkyWars.kills_team_insane / d.stats.SkyWars.deaths_team_insane).toFixed(2),
+          wins: d.stats.SkyWars.wins_team_insane,
+          losses: d.stats.SkyWars.losses_team_insane,
+          wlr: (d.stats.SkyWars.kills_team_insane / d.stats.SkyWars.losses_team_insane).toFixed(2)
+        },
+        ranked: {
+          kills: d.stats.SkyWars.kills_ranked,
+          deaths: d.stats.SkyWars.deaths_ranked,
+          kdr: (d.stats.SkyWars.kills_ranked / d.stats.SkyWars.deaths_ranked).toFixed(2),
+          wins: d.stats.SkyWars.wins_ranked,
+          losses: d.stats.SkyWars.losses_ranked,
+          wlr: (d.stats.SkyWars.kills_ranked / d.stats.SkyWars.losses_ranked).toFixed(2)
+        },
+        overall: {
+          kills: d.stats.SkyWars.kills,
+          deaths: d.stats.SkyWars.deaths,
+          kdr: (d.stats.SkyWars.kills / d.stats.SkyWars.deaths).toFixed(2),
+          wins: d.stats.SkyWars.wins,
+          losses: d.stats.SkyWars.losses,
+          wlr: (d.stats.SkyWars.kills / d.stats.SkyWars.losses).toFixed(2)
+        }
       }
     }
   };
-  //console.log(data);
+  //console.log(func);
   func();
 }
 

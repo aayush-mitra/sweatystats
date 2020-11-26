@@ -243,35 +243,35 @@ footer .container p {
   animation-duration: 2s;
 }
 
-#Bedwars table {
+.stats table {
   border-collapse: collapse;
   width: 100%;
   font-size: 0.9em;
   
 }
 
-#Bedwars table thead tr {
+.stats table thead tr {
   background-color: var(--primary-color);
   text-align: left;
   font-weight: bold;
 }
 
-#Bedwars table th,
-#Bedwars table td {
+.stats table th,
+.stats table td {
   padding: 12px 15px;
 }
 
-#Bedwars table tr {
+.stats table tr {
   border-bottom: 1px solid lightgray;
 }
 
-#Bedwars h1, #Bedwars h2, #Bedwars h3, #Bedwars h4 {
+.stats h1, .stats h2, .stats h3, .stats h4 {
   padding: 10px;
   color: black;
   font-weight: 900;
 }
 
-#Bedwars span {
+.stats span {
   font-weight: normal;
   color: #333;
 }
