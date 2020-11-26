@@ -224,3 +224,7 @@ footer .container p {
   font-weight: normal;
   color: #333;
 }
+
+.stats {
+  overflow-y: scroll;
+}
