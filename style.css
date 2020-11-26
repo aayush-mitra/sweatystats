@@ -238,4 +238,44 @@ footer .container p {
 
 .stats {
   overflow-y: scroll;
+  display: none;
+  animation: animation1;
+  animation-duration: 2s;
+}
+
+#Bedwars table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9em;
+  
+}
+
+#Bedwars table thead tr {
+  background-color: var(--primary-color);
+  text-align: left;
+  font-weight: bold;
+}
+
+#Bedwars table th,
+#Bedwars table td {
+  padding: 12px 15px;
+}
+
+#Bedwars table tr {
+  border-bottom: 1px solid lightgray;
+}
+
+#Bedwars h1, #Bedwars h2, #Bedwars h3, #Bedwars h4 {
+  padding: 10px;
+  color: black;
+  font-weight: 900;
+}
+
+#Bedwars span {
+  font-weight: normal;
+  color: #333;
+}
+
+.title {
+  font-weight: bold;
 }
