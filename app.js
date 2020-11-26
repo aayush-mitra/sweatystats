@@ -47,7 +47,7 @@ function setData(d, func) {
     name: d.displayname,
     rank: rank1 === "SUPERSTAR" ? "MVP_PLUS_PLUS" : rank1,
     karma: d.karma,
-    lastLogin: d.lastLogin,
+    lastLogin: new Date(d.lastLogin),
     uuid: d.uuid,
     nameHistory: d.knownAliases,
     level: Math.floor((Math.sqrt((2 * d.networkExp) + 30625) / 50) - 2.5),
@@ -164,7 +164,7 @@ const updateInterface = (stuff) => {
   elems[0].innerHTML = stuff.name;
   elems[2].firstElementChild.innerHTML = stuff.rank;
   elems[3].firstElementChild.innerHTML = stuff.level;
-  elems[4].firstElementChild.innerHTML = stuff.nameHistory.toString();
+  elems[4].firstElementChild.innerHTML = stuff.nameHistory.join(', ');
   elems[5].firstElementChild.innerHTML = stuff.karma;
   elems[6].firstElementChild.innerHTML = stuff.lastLogin;
   elems[8].firstElementChild.innerHTML = stuff.guild.guild.name;
