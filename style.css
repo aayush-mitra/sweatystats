@@ -60,7 +60,7 @@ img {
   margin: 0 5px;
 }
 
-.navbar a:hover {
+a:hover {
   border-bottom: 2px solid #333;
 }
 
@@ -278,4 +278,33 @@ footer .container p {
 
 .title {
   font-weight: bold;
+}
+
+.stats button {
+  margin: 10px;
+  width: 40%;
+}
+
+#about .grid {
+  grid-template-columns: 100%;
+}
+
+#about .container .about {
+  background-color: white;
+  height: 80%;
+  
+  color: black;
+  border: 10px solid var(--primary-color);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.about h1, .about h2, .about h3, .about h4 {
+  padding: 10px;
+  color: black;
+  font-weight: 900;
+}
+
+table {
+  margin-bottom: 15px;
 }

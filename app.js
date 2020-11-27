@@ -2,9 +2,79 @@ const urlParams = new URLSearchParams(window.location.search);
 const name = urlParams.get('name');
 document.querySelectorAll('title')[0].innerHTML = `${name} | SweatyStats`
 const navs = document.querySelectorAll(".nav-item");
+const key = 'd5db2401-3d43-4ece-a681-a013df180a3c';
 
 let data = {};
 let selected;
+
+const colors = {
+  'DARK_RED': '#AA0000',
+  'RED': '#FF5555',
+  'GOLD': '#FFAA00',
+  'YELLOW': '#FFFF55',
+  'DARK_GREEN': '#00AA00',
+  'GREEN': '#55FF55',
+  'AQUA': '#55FFFF',
+  'DARK_AQUA': '#00AAAA',
+  'DARK_BLUE': '#0000AA',
+  'BLUE': '#5555FF',
+  'LIGHT_PURPLE': '#FF55FF',
+  'DARK_PURPLE': '#AA00AA',
+  'WHITE': '#FFFFFF',
+  'GRAY': '#AAAAAA',
+  'DARK_GRAY': '#555555',
+  'BLACK': '#000000',
+}
+
+const ranking = (rank, color) => {
+  let final;
+  if (rank === 'VIP') {
+    final = [
+      ['[VIP]', '#55FF55']
+    ];
+  } else if (rank === 'VIP_PLUS') {
+    final = [
+      ['[VIP', '#55FF55'],
+      ['+', '#FFAA00'],
+      [']', '#55FF55']
+    ];
+  } else if (rank === 'MVP') {
+    final = [
+      ['[MVP]', '#55FFFF']
+    ];
+  } else if (rank === 'MVP_PLUS') {
+    final = [
+      ['[MVP', '#55FFFF'],
+      ['+', colors[color]],
+      [']', '#55FFFF']
+    ];
+  } else if (rank === 'MVP_PLUS_PLUS') {
+    final = [
+      ['[MVP', '#FFAA00'],
+      ['++', colors[color]],
+      [']', '#FFAA00']
+    ];
+  } else if (rank === 'YOUTUBER') {
+    final = [
+      ['[', '#AA0000'],
+      ['YOUTUBE', 'lightgray'],
+      [']', '#AA0000']
+    ];
+  } else if (rank === 'HELPER') {
+    final = [
+      ['[HELPER]', '#0000AA']
+    ];
+  } else if (rank === 'MODERATOR') {
+    final = [
+      ['[MODERATOR]', '#00AA00']
+    ];
+  } else {
+    final = [
+      ['', '#AAAAAA']
+    ];
+  }
+  return final;
+};
 
 
 navs.forEach(button => {
@@ -14,166 +84,359 @@ navs.forEach(button => {
   });
 })
 
+document.getElementById('show').addEventListener('click', (e) => {
+  
+  guildmems();
+});
+
+
+function guildmems() {
+  let i = document.getElementById(selected).children[6].children.length - 1;
+  for(let x = i; x < data.guild.guild.members.length; x++) {
+    
+    fetch(`https://api.hypixel.net/player?key=${key}&uuid=${data.guild.guild.members[x].uuid}`).then(response => response.json()).then(player => {
+      document.getElementById(selected).children[6].innerHTML += `<span><a target="_blank" href="stats.html?name=${player.player.displayname}">${player.player.displayname} - ${data.guild.guild.members[x].rank}</span><br>`
+      //console.log(player)
+    }).catch(err => console.log(err));
+    
+  }
+}
+
 const updateInterface = (stuff) => {
   if (selected === "Network") {
+    const prefix = ranking(stuff.rank, stuff.pluscolor).map(arr => {
+      return `<span style="color: ${arr[1]}">${arr[0]}</span>`;
+
+    }).join('') + ` <span style="color: ${ranking(stuff.rank, stuff.pluscolor)[0][1]}">${stuff.name}</span>`;
+    
     const elems = document.getElementById(selected).children;
     console.log(stuff);
-    elems[0].innerHTML = stuff.name + ` [${stuff.guild.guild.tag}]`;
+    let checkguild = stuff.guild.guild !== null ? ` <span style="color: ${colors[stuff.guild.guild.tagColor]}">[${stuff.guild.guild.tag}]` : '';
+    elems[0].innerHTML = prefix + checkguild;
     elems[2].firstElementChild.innerHTML = stuff.rank;
     elems[3].firstElementChild.innerHTML = stuff.level;
     elems[4].firstElementChild.innerHTML = stuff.nameHistory.join(', ');
     elems[5].firstElementChild.innerHTML = stuff.karma;
     elems[6].firstElementChild.innerHTML = stuff.lastLogin;
-    elems[8].firstElementChild.innerHTML = stuff.guild.guild.name;
-    elems[9].firstElementChild.innerHTML = stuff.guild.guild.members.length;
+    if (stuff.guild.guild !== null) {
+      elems[8].firstElementChild.innerHTML = stuff.guild.guild.name;
+      elems[9].firstElementChild.innerHTML = stuff.guild.guild.members.length;
+    } else {
+      elems[7].style.display = 'none';
+      elems[8].style.display = 'none';
+      elems[9].style.display = 'none';
+    }
     if (stuff.status.online === false) {
       elems[12].firstElementChild.innerHTML = 'offline';
     } else {
       elems[12].firstElementChild.innerHTML = `Online, playing: ${stuff.status.gameType}, mode: ${stuff.status.mode}`;
     }
+    elems[14].innerHTML = `<a target="_blank" href="https://sky.lea.moe/stats/${stuff.name}">Skyblock Stats</a>`;
   } else if (selected === "Bedwars") {
+    const prefix = ranking(stuff.rank, stuff.pluscolor).map(arr => {
+      return `<span style="color: ${arr[1]}">${arr[0]}</span>`;
+
+    }).join('') + ` <span style="color: ${ranking(stuff.rank, stuff.pluscolor)[0][1]}">${stuff.name}</span>`;
+    let checkguild = stuff.guild.guild !== null ? ` <span style="color: ${colors[stuff.guild.guild.tagColor]}">[${stuff.guild.guild.tag}]</span>` : '';
     const elems = document.getElementById(selected).children;
-    elems[0].innerHTML = stuff.name + ` [${stuff.guild.guild.tag}] - Bedwars`;
+    elems[0].innerHTML = prefix + checkguild + ' - Bedwars';
     elems[2].firstElementChild.innerHTML = stuff.stats.bedwars.coins;
     elems[3].firstElementChild.innerHTML = stuff.stats.bedwars.winstreak;
     elems[4].firstElementChild.innerHTML = stuff.stats.bedwars.level;
     //kills
-    elems[5].children[1].firstElementChild.children[1].innerHTML = stuff.stats.bedwars.solo.kills;
-    elems[5].children[1].firstElementChild.children[2].innerHTML = stuff.stats.bedwars.doubles.kills;
-    elems[5].children[1].firstElementChild.children[3].innerHTML = stuff.stats.bedwars.threes.kills;
-    elems[5].children[1].firstElementChild.children[4].innerHTML = stuff.stats.bedwars.fours.kills;
-    elems[5].children[1].firstElementChild.children[5].innerHTML = stuff.stats.bedwars.fourvfour.kills;
-    elems[5].children[1].firstElementChild.children[6].innerHTML = stuff.stats.bedwars.overall.kills;
+    elems[5].children[1].firstElementChild.children[1].innerHTML = stuff.stats.bedwars.solo.kills || 0;
+    elems[5].children[1].firstElementChild.children[2].innerHTML = stuff.stats.bedwars.doubles.kills || 0;
+    elems[5].children[1].firstElementChild.children[3].innerHTML = stuff.stats.bedwars.threes.kills || 0;
+    elems[5].children[1].firstElementChild.children[4].innerHTML = stuff.stats.bedwars.fours.kills || 0;
+    elems[5].children[1].firstElementChild.children[5].innerHTML = stuff.stats.bedwars.fourvfour.kills || 0;
+    elems[5].children[1].firstElementChild.children[6].innerHTML = stuff.stats.bedwars.overall.kills || 0;
     //kills
-    elems[5].children[1].children[1].children[1].innerHTML = stuff.stats.bedwars.solo.deaths;
-    elems[5].children[1].children[1].children[2].innerHTML = stuff.stats.bedwars.doubles.deaths;
-    elems[5].children[1].children[1].children[3].innerHTML = stuff.stats.bedwars.threes.deaths;
-    elems[5].children[1].children[1].children[4].innerHTML = stuff.stats.bedwars.fours.deaths;
-    elems[5].children[1].children[1].children[5].innerHTML = stuff.stats.bedwars.fourvfour.deaths;
-    elems[5].children[1].children[1].children[6].innerHTML = stuff.stats.bedwars.overall.deaths;
+    elems[5].children[1].children[1].children[1].innerHTML = stuff.stats.bedwars.solo.deaths || 0;
+    elems[5].children[1].children[1].children[2].innerHTML = stuff.stats.bedwars.doubles.deaths || 0;
+    elems[5].children[1].children[1].children[3].innerHTML = stuff.stats.bedwars.threes.deaths || 0;
+    elems[5].children[1].children[1].children[4].innerHTML = stuff.stats.bedwars.fours.deaths || 0;
+    elems[5].children[1].children[1].children[5].innerHTML = stuff.stats.bedwars.fourvfour.deaths || 0;
+    elems[5].children[1].children[1].children[6].innerHTML = stuff.stats.bedwars.overall.deaths || 0;
     //kills
-    elems[5].children[1].children[2].children[1].innerHTML = stuff.stats.bedwars.solo.kdr;
-    elems[5].children[1].children[2].children[2].innerHTML = stuff.stats.bedwars.doubles.kdr;
-    elems[5].children[1].children[2].children[3].innerHTML = stuff.stats.bedwars.threes.kdr;
-    elems[5].children[1].children[2].children[4].innerHTML = stuff.stats.bedwars.fours.kdr;
-    elems[5].children[1].children[2].children[5].innerHTML = stuff.stats.bedwars.fourvfour.kdr;
-    elems[5].children[1].children[2].children[6].innerHTML = stuff.stats.bedwars.overall.kdr;
+    elems[5].children[1].children[2].children[1].innerHTML = stuff.stats.bedwars.solo.kdr || 0;
+    elems[5].children[1].children[2].children[2].innerHTML = stuff.stats.bedwars.doubles.kdr || 0;
+    elems[5].children[1].children[2].children[3].innerHTML = stuff.stats.bedwars.threes.kdr || 0;
+    elems[5].children[1].children[2].children[4].innerHTML = stuff.stats.bedwars.fours.kdr || 0;
+    elems[5].children[1].children[2].children[5].innerHTML = stuff.stats.bedwars.fourvfour.kdr || 0;
+    elems[5].children[1].children[2].children[6].innerHTML = stuff.stats.bedwars.overall.kdr || 0;
     //kills
-    elems[5].children[1].children[3].children[1].innerHTML = stuff.stats.bedwars.solo.finals;
-    elems[5].children[1].children[3].children[2].innerHTML = stuff.stats.bedwars.doubles.finals;
-    elems[5].children[1].children[3].children[3].innerHTML = stuff.stats.bedwars.threes.finals;
-    elems[5].children[1].children[3].children[4].innerHTML = stuff.stats.bedwars.fours.finals;
-    elems[5].children[1].children[3].children[5].innerHTML = stuff.stats.bedwars.fourvfour.finals;
-    elems[5].children[1].children[3].children[6].innerHTML = stuff.stats.bedwars.overall.finals;
+    elems[5].children[1].children[3].children[1].innerHTML = stuff.stats.bedwars.solo.finals || 0;
+    elems[5].children[1].children[3].children[2].innerHTML = stuff.stats.bedwars.doubles.finals || 0;
+    elems[5].children[1].children[3].children[3].innerHTML = stuff.stats.bedwars.threes.finals || 0;
+    elems[5].children[1].children[3].children[4].innerHTML = stuff.stats.bedwars.fours.finals || 0;
+    elems[5].children[1].children[3].children[5].innerHTML = stuff.stats.bedwars.fourvfour.finals || 0;
+    elems[5].children[1].children[3].children[6].innerHTML = stuff.stats.bedwars.overall.finals || 0;
     //kills
-    elems[5].children[1].children[4].children[1].innerHTML = stuff.stats.bedwars.solo.fdeaths;
-    elems[5].children[1].children[4].children[2].innerHTML = stuff.stats.bedwars.doubles.fdeaths;
-    elems[5].children[1].children[4].children[3].innerHTML = stuff.stats.bedwars.threes.fdeaths;
-    elems[5].children[1].children[4].children[4].innerHTML = stuff.stats.bedwars.fours.fdeaths;
-    elems[5].children[1].children[4].children[5].innerHTML = stuff.stats.bedwars.fourvfour.fdeaths;
-    elems[5].children[1].children[4].children[6].innerHTML = stuff.stats.bedwars.overall.fdeaths;
+    elems[5].children[1].children[4].children[1].innerHTML = stuff.stats.bedwars.solo.fdeaths || 0;
+    elems[5].children[1].children[4].children[2].innerHTML = stuff.stats.bedwars.doubles.fdeaths || 0;
+    elems[5].children[1].children[4].children[3].innerHTML = stuff.stats.bedwars.threes.fdeaths || 0;
+    elems[5].children[1].children[4].children[4].innerHTML = stuff.stats.bedwars.fours.fdeaths || 0;
+    elems[5].children[1].children[4].children[5].innerHTML = stuff.stats.bedwars.fourvfour.fdeaths || 0;
+    elems[5].children[1].children[4].children[6].innerHTML = stuff.stats.bedwars.overall.fdeaths || 0;
     //kills
-    elems[5].children[1].children[5].children[1].innerHTML = stuff.stats.bedwars.solo.fkdr;
-    elems[5].children[1].children[5].children[2].innerHTML = stuff.stats.bedwars.doubles.fkdr;
-    elems[5].children[1].children[5].children[3].innerHTML = stuff.stats.bedwars.threes.fkdr;
-    elems[5].children[1].children[5].children[4].innerHTML = stuff.stats.bedwars.fours.fkdr;
-    elems[5].children[1].children[5].children[5].innerHTML = stuff.stats.bedwars.fourvfour.fkdr;
-    elems[5].children[1].children[5].children[6].innerHTML = stuff.stats.bedwars.overall.fkdr;
+    elems[5].children[1].children[5].children[1].innerHTML = stuff.stats.bedwars.solo.fkdr || 0;
+    elems[5].children[1].children[5].children[2].innerHTML = stuff.stats.bedwars.doubles.fkdr || 0;
+    elems[5].children[1].children[5].children[3].innerHTML = stuff.stats.bedwars.threes.fkdr || 0;
+    elems[5].children[1].children[5].children[4].innerHTML = stuff.stats.bedwars.fours.fkdr || 0;
+    elems[5].children[1].children[5].children[5].innerHTML = stuff.stats.bedwars.fourvfour.fkdr || 0;
+    elems[5].children[1].children[5].children[6].innerHTML = stuff.stats.bedwars.overall.fkdr || 0;
     //kills
-    elems[5].children[1].children[6].children[1].innerHTML = stuff.stats.bedwars.solo.wins;
-    elems[5].children[1].children[6].children[2].innerHTML = stuff.stats.bedwars.doubles.wins;
-    elems[5].children[1].children[6].children[3].innerHTML = stuff.stats.bedwars.threes.wins;
-    elems[5].children[1].children[6].children[4].innerHTML = stuff.stats.bedwars.fours.wins;
-    elems[5].children[1].children[6].children[5].innerHTML = stuff.stats.bedwars.fourvfour.wins;
-    elems[5].children[1].children[6].children[6].innerHTML = stuff.stats.bedwars.overall.wins;
+    elems[5].children[1].children[6].children[1].innerHTML = stuff.stats.bedwars.solo.wins || 0;
+    elems[5].children[1].children[6].children[2].innerHTML = stuff.stats.bedwars.doubles.wins || 0;
+    elems[5].children[1].children[6].children[3].innerHTML = stuff.stats.bedwars.threes.wins || 0;
+    elems[5].children[1].children[6].children[4].innerHTML = stuff.stats.bedwars.fours.wins || 0;
+    elems[5].children[1].children[6].children[5].innerHTML = stuff.stats.bedwars.fourvfour.wins || 0;
+    elems[5].children[1].children[6].children[6].innerHTML = stuff.stats.bedwars.overall.wins || 0;
     //kills
-    elems[5].children[1].children[7].children[1].innerHTML = stuff.stats.bedwars.solo.losses;
-    elems[5].children[1].children[7].children[2].innerHTML = stuff.stats.bedwars.doubles.losses;
-    elems[5].children[1].children[7].children[3].innerHTML = stuff.stats.bedwars.threes.losses;
-    elems[5].children[1].children[7].children[4].innerHTML = stuff.stats.bedwars.fours.losses;
-    elems[5].children[1].children[7].children[5].innerHTML = stuff.stats.bedwars.fourvfour.losses;
-    elems[5].children[1].children[7].children[6].innerHTML = stuff.stats.bedwars.overall.losses;
+    elems[5].children[1].children[7].children[1].innerHTML = stuff.stats.bedwars.solo.losses || 0;
+    elems[5].children[1].children[7].children[2].innerHTML = stuff.stats.bedwars.doubles.losses || 0;
+    elems[5].children[1].children[7].children[3].innerHTML = stuff.stats.bedwars.threes.losses || 0;
+    elems[5].children[1].children[7].children[4].innerHTML = stuff.stats.bedwars.fours.losses || 0;
+    elems[5].children[1].children[7].children[5].innerHTML = stuff.stats.bedwars.fourvfour.losses || 0;
+    elems[5].children[1].children[7].children[6].innerHTML = stuff.stats.bedwars.overall.losses || 0;
     //kills
-    elems[5].children[1].children[8].children[1].innerHTML = stuff.stats.bedwars.solo.wlr;
-    elems[5].children[1].children[8].children[2].innerHTML = stuff.stats.bedwars.doubles.wlr;
-    elems[5].children[1].children[8].children[3].innerHTML = stuff.stats.bedwars.threes.wlr;
-    elems[5].children[1].children[8].children[4].innerHTML = stuff.stats.bedwars.fours.wlr;
-    elems[5].children[1].children[8].children[5].innerHTML = stuff.stats.bedwars.fourvfour.wlr;
-    elems[5].children[1].children[8].children[6].innerHTML = stuff.stats.bedwars.overall.wlr;
+    elems[5].children[1].children[8].children[1].innerHTML = stuff.stats.bedwars.solo.wlr || 0;
+    elems[5].children[1].children[8].children[2].innerHTML = stuff.stats.bedwars.doubles.wlr || 0;
+    elems[5].children[1].children[8].children[3].innerHTML = stuff.stats.bedwars.threes.wlr || 0;
+    elems[5].children[1].children[8].children[4].innerHTML = stuff.stats.bedwars.fours.wlr || 0;
+    elems[5].children[1].children[8].children[5].innerHTML = stuff.stats.bedwars.fourvfour.wlr || 0;
+    elems[5].children[1].children[8].children[6].innerHTML = stuff.stats.bedwars.overall.wlr || 0;
     //kills
-    elems[5].children[1].children[9].children[1].innerHTML = stuff.stats.bedwars.solo.bedsbroken;
-    elems[5].children[1].children[9].children[2].innerHTML = stuff.stats.bedwars.doubles.bedsbroken;
-    elems[5].children[1].children[9].children[3].innerHTML = stuff.stats.bedwars.threes.bedsbroken;
-    elems[5].children[1].children[9].children[4].innerHTML = stuff.stats.bedwars.fours.bedsbroken;
-    elems[5].children[1].children[9].children[5].innerHTML = stuff.stats.bedwars.fourvfour.bedsbroken;
-    elems[5].children[1].children[9].children[6].innerHTML = stuff.stats.bedwars.overall.bedsbroken;
+    elems[5].children[1].children[9].children[1].innerHTML = stuff.stats.bedwars.solo.bedsbroken || 0;
+    elems[5].children[1].children[9].children[2].innerHTML = stuff.stats.bedwars.doubles.bedsbroken || 0;
+    elems[5].children[1].children[9].children[3].innerHTML = stuff.stats.bedwars.threes.bedsbroken || 0;
+    elems[5].children[1].children[9].children[4].innerHTML = stuff.stats.bedwars.fours.bedsbroken || 0;
+    elems[5].children[1].children[9].children[5].innerHTML = stuff.stats.bedwars.fourvfour.bedsbroken || 0;
+    elems[5].children[1].children[9].children[6].innerHTML = stuff.stats.bedwars.overall.bedsbroken || 0;
     //kills
-    elems[5].children[1].children[10].children[1].innerHTML = stuff.stats.bedwars.solo.bedslost;
-    elems[5].children[1].children[10].children[2].innerHTML = stuff.stats.bedwars.doubles.bedslost;
-    elems[5].children[1].children[10].children[3].innerHTML = stuff.stats.bedwars.threes.bedslost;
-    elems[5].children[1].children[10].children[4].innerHTML = stuff.stats.bedwars.fours.bedslost;
-    elems[5].children[1].children[10].children[5].innerHTML = stuff.stats.bedwars.fourvfour.bedslost;
-    elems[5].children[1].children[10].children[6].innerHTML = stuff.stats.bedwars.overall.bedslost;
+    elems[5].children[1].children[10].children[1].innerHTML = stuff.stats.bedwars.solo.bedslost || 0;
+    elems[5].children[1].children[10].children[2].innerHTML = stuff.stats.bedwars.doubles.bedslost || 0;
+    elems[5].children[1].children[10].children[3].innerHTML = stuff.stats.bedwars.threes.bedslost || 0;
+    elems[5].children[1].children[10].children[4].innerHTML = stuff.stats.bedwars.fours.bedslost || 0;
+    elems[5].children[1].children[10].children[5].innerHTML = stuff.stats.bedwars.fourvfour.bedslost || 0;
+    elems[5].children[1].children[10].children[6].innerHTML = stuff.stats.bedwars.overall.bedslost || 0;
     //kills
-    elems[5].children[1].children[11].children[1].innerHTML = stuff.stats.bedwars.solo.bblr;
-    elems[5].children[1].children[11].children[2].innerHTML = stuff.stats.bedwars.doubles.bblr;
-    elems[5].children[1].children[11].children[3].innerHTML = stuff.stats.bedwars.threes.bblr;
-    elems[5].children[1].children[11].children[4].innerHTML = stuff.stats.bedwars.fours.bblr;
-    elems[5].children[1].children[11].children[5].innerHTML = stuff.stats.bedwars.fourvfour.bblr;
-    elems[5].children[1].children[11].children[6].innerHTML = stuff.stats.bedwars.overall.bblr;
+    elems[5].children[1].children[11].children[1].innerHTML = stuff.stats.bedwars.solo.bblr || 0;
+    elems[5].children[1].children[11].children[2].innerHTML = stuff.stats.bedwars.doubles.bblr || 0;
+    elems[5].children[1].children[11].children[3].innerHTML = stuff.stats.bedwars.threes.bblr || 0;
+    elems[5].children[1].children[11].children[4].innerHTML = stuff.stats.bedwars.fours.bblr || 0;
+    elems[5].children[1].children[11].children[5].innerHTML = stuff.stats.bedwars.fourvfour.bblr || 0;
+    elems[5].children[1].children[11].children[6].innerHTML = stuff.stats.bedwars.overall.bblr || 0;
 
+    //DREAMS
+
+    //kills
+    elems[6].children[1].children[0].children[1].innerHTML = stuff.stats.bedwars.rush2.kills || 0;
+    elems[6].children[1].children[0].children[2].innerHTML = stuff.stats.bedwars.rush4.kills || 0;
+    elems[6].children[1].children[0].children[3].innerHTML = stuff.stats.bedwars.ultimate2.kills || 0;
+    elems[6].children[1].children[0].children[4].innerHTML = stuff.stats.bedwars.ultimate4.kills || 0;
+    elems[6].children[1].children[0].children[5].innerHTML = stuff.stats.bedwars.castle.kills || 0;
+    elems[6].children[1].children[0].children[6].innerHTML = stuff.stats.bedwars.voidless2.kills || 0;
+    elems[6].children[1].children[0].children[7].innerHTML = stuff.stats.bedwars.voidless4.kills || 0;
+    elems[6].children[1].children[0].children[8].innerHTML = stuff.stats.bedwars.armed2.kills || 0;
+    elems[6].children[1].children[0].children[9].innerHTML = stuff.stats.bedwars.armed4.kills || 0;
+    elems[6].children[1].children[0].children[10].innerHTML = stuff.stats.bedwars.lucky2.kills || 0;
+    elems[6].children[1].children[0].children[11].innerHTML = stuff.stats.bedwars.lucky4.kills || 0;
+    //kills
+    elems[6].children[1].children[1].children[1].innerHTML = stuff.stats.bedwars.rush2.deaths || 0;
+    elems[6].children[1].children[1].children[2].innerHTML = stuff.stats.bedwars.rush4.deaths || 0;
+    elems[6].children[1].children[1].children[3].innerHTML = stuff.stats.bedwars.ultimate2.deaths || 0;
+    elems[6].children[1].children[1].children[4].innerHTML = stuff.stats.bedwars.ultimate4.deaths || 0;
+    elems[6].children[1].children[1].children[5].innerHTML = stuff.stats.bedwars.castle.deaths || 0;
+    elems[6].children[1].children[1].children[6].innerHTML = stuff.stats.bedwars.voidless2.deaths || 0;
+    elems[6].children[1].children[1].children[7].innerHTML = stuff.stats.bedwars.voidless4.deaths || 0;
+    elems[6].children[1].children[1].children[8].innerHTML = stuff.stats.bedwars.armed2.deaths || 0;
+    elems[6].children[1].children[1].children[9].innerHTML = stuff.stats.bedwars.armed4.deaths || 0;
+    elems[6].children[1].children[1].children[10].innerHTML = stuff.stats.bedwars.lucky2.deaths || 0;
+    elems[6].children[1].children[1].children[11].innerHTML = stuff.stats.bedwars.lucky4.deaths || 0;
+    //kills
+    elems[6].children[1].children[2].children[1].innerHTML = stuff.stats.bedwars.rush2.kdr || 0;
+    elems[6].children[1].children[2].children[2].innerHTML = stuff.stats.bedwars.rush4.kdr || 0;
+    elems[6].children[1].children[2].children[3].innerHTML = stuff.stats.bedwars.ultimate2.kdr || 0;
+    elems[6].children[1].children[2].children[4].innerHTML = stuff.stats.bedwars.ultimate4.kdr || 0;
+    elems[6].children[1].children[2].children[5].innerHTML = stuff.stats.bedwars.castle.kdr || 0;
+    elems[6].children[1].children[2].children[6].innerHTML = stuff.stats.bedwars.voidless2.kdr || 0;
+    elems[6].children[1].children[2].children[7].innerHTML = stuff.stats.bedwars.voidless4.kdr || 0;
+    elems[6].children[1].children[2].children[8].innerHTML = stuff.stats.bedwars.armed2.kdr || 0;
+    elems[6].children[1].children[2].children[9].innerHTML = stuff.stats.bedwars.armed4.kdr || 0;
+    elems[6].children[1].children[2].children[10].innerHTML = stuff.stats.bedwars.lucky2.kdr || 0;
+    elems[6].children[1].children[2].children[11].innerHTML = stuff.stats.bedwars.lucky4.kdr || 0;
+    //kills
+    elems[6].children[1].children[3].children[1].innerHTML = stuff.stats.bedwars.rush2.finals || 0;
+    elems[6].children[1].children[3].children[2].innerHTML = stuff.stats.bedwars.rush4.finals || 0;
+    elems[6].children[1].children[3].children[3].innerHTML = stuff.stats.bedwars.ultimate2.finals || 0;
+    elems[6].children[1].children[3].children[4].innerHTML = stuff.stats.bedwars.ultimate4.finals || 0;
+    elems[6].children[1].children[3].children[5].innerHTML = stuff.stats.bedwars.castle.finals || 0;
+    elems[6].children[1].children[3].children[6].innerHTML = stuff.stats.bedwars.voidless2.finals || 0;
+    elems[6].children[1].children[3].children[7].innerHTML = stuff.stats.bedwars.voidless4.finals || 0;
+    elems[6].children[1].children[3].children[8].innerHTML = stuff.stats.bedwars.armed2.finals || 0;
+    elems[6].children[1].children[3].children[9].innerHTML = stuff.stats.bedwars.armed4.finals || 0;
+    elems[6].children[1].children[3].children[10].innerHTML = stuff.stats.bedwars.lucky2.finals || 0;
+    elems[6].children[1].children[3].children[11].innerHTML = stuff.stats.bedwars.lucky4.finals || 0;
+    //kills
+    elems[6].children[1].children[4].children[1].innerHTML = stuff.stats.bedwars.rush2.fdeaths || 0;
+    elems[6].children[1].children[4].children[2].innerHTML = stuff.stats.bedwars.rush4.fdeaths || 0;
+    elems[6].children[1].children[4].children[3].innerHTML = stuff.stats.bedwars.ultimate2.fdeaths || 0;
+    elems[6].children[1].children[4].children[4].innerHTML = stuff.stats.bedwars.ultimate4.fdeaths || 0;
+    elems[6].children[1].children[4].children[5].innerHTML = stuff.stats.bedwars.castle.fdeaths || 0;
+    elems[6].children[1].children[4].children[6].innerHTML = stuff.stats.bedwars.voidless2.fdeaths || 0;
+    elems[6].children[1].children[4].children[7].innerHTML = stuff.stats.bedwars.voidless4.fdeaths || 0;
+    elems[6].children[1].children[4].children[8].innerHTML = stuff.stats.bedwars.armed2.fdeaths || 0;
+    elems[6].children[1].children[4].children[9].innerHTML = stuff.stats.bedwars.armed4.fdeaths || 0;
+    elems[6].children[1].children[4].children[10].innerHTML = stuff.stats.bedwars.lucky2.fdeaths || 0;
+    elems[6].children[1].children[4].children[11].innerHTML = stuff.stats.bedwars.lucky4.fdeaths || 0;
+    //kills
+    elems[6].children[1].children[5].children[1].innerHTML = stuff.stats.bedwars.rush2.fkdr || 0;
+    elems[6].children[1].children[5].children[2].innerHTML = stuff.stats.bedwars.rush4.fkdr || 0;
+    elems[6].children[1].children[5].children[3].innerHTML = stuff.stats.bedwars.ultimate2.fkdr || 0;
+    elems[6].children[1].children[5].children[4].innerHTML = stuff.stats.bedwars.ultimate4.fkdr || 0;
+    elems[6].children[1].children[5].children[5].innerHTML = stuff.stats.bedwars.castle.fkdr || 0;
+    elems[6].children[1].children[5].children[6].innerHTML = stuff.stats.bedwars.voidless2.fkdr || 0;
+    elems[6].children[1].children[5].children[7].innerHTML = stuff.stats.bedwars.voidless4.fkdr || 0;
+    elems[6].children[1].children[5].children[8].innerHTML = stuff.stats.bedwars.armed2.fkdr || 0;
+    elems[6].children[1].children[5].children[9].innerHTML = stuff.stats.bedwars.armed4.fkdr || 0;
+    elems[6].children[1].children[5].children[10].innerHTML = stuff.stats.bedwars.lucky2.fkdr || 0;
+    elems[6].children[1].children[5].children[11].innerHTML = stuff.stats.bedwars.lucky4.fkdr || 0;
+    //kills
+    elems[6].children[1].children[6].children[1].innerHTML = stuff.stats.bedwars.rush2.wins || 0;
+    elems[6].children[1].children[6].children[2].innerHTML = stuff.stats.bedwars.rush4.wins || 0;
+    elems[6].children[1].children[6].children[3].innerHTML = stuff.stats.bedwars.ultimate2.wins || 0;
+    elems[6].children[1].children[6].children[4].innerHTML = stuff.stats.bedwars.ultimate4.wins || 0;
+    elems[6].children[1].children[6].children[5].innerHTML = stuff.stats.bedwars.castle.wins || 0;
+    elems[6].children[1].children[6].children[6].innerHTML = stuff.stats.bedwars.voidless2.wins || 0;
+    elems[6].children[1].children[6].children[7].innerHTML = stuff.stats.bedwars.voidless4.wins || 0;
+    elems[6].children[1].children[6].children[8].innerHTML = stuff.stats.bedwars.armed2.wins || 0;
+    elems[6].children[1].children[6].children[9].innerHTML = stuff.stats.bedwars.armed4.wins || 0;
+    elems[6].children[1].children[6].children[10].innerHTML = stuff.stats.bedwars.lucky2.wins || 0;
+    elems[6].children[1].children[6].children[11].innerHTML = stuff.stats.bedwars.lucky4.wins || 0;
+    //kills
+    elems[6].children[1].children[7].children[1].innerHTML = stuff.stats.bedwars.rush2.losses || 0;
+    elems[6].children[1].children[7].children[2].innerHTML = stuff.stats.bedwars.rush4.losses || 0;
+    elems[6].children[1].children[7].children[3].innerHTML = stuff.stats.bedwars.ultimate2.losses || 0;
+    elems[6].children[1].children[7].children[4].innerHTML = stuff.stats.bedwars.ultimate4.losses || 0;
+    elems[6].children[1].children[7].children[5].innerHTML = stuff.stats.bedwars.castle.losses || 0;
+    elems[6].children[1].children[7].children[6].innerHTML = stuff.stats.bedwars.voidless2.losses || 0;
+    elems[6].children[1].children[7].children[7].innerHTML = stuff.stats.bedwars.voidless4.losses || 0;
+    elems[6].children[1].children[7].children[8].innerHTML = stuff.stats.bedwars.armed2.losses || 0;
+    elems[6].children[1].children[7].children[9].innerHTML = stuff.stats.bedwars.armed4.losses || 0;
+    elems[6].children[1].children[7].children[10].innerHTML = stuff.stats.bedwars.lucky2.losses || 0;
+    elems[6].children[1].children[7].children[11].innerHTML = stuff.stats.bedwars.lucky4.losses || 0;
+    //kills
+    elems[6].children[1].children[8].children[1].innerHTML = stuff.stats.bedwars.rush2.wlr || 0;
+    elems[6].children[1].children[8].children[2].innerHTML = stuff.stats.bedwars.rush4.wlr || 0;
+    elems[6].children[1].children[8].children[3].innerHTML = stuff.stats.bedwars.ultimate2.wlr || 0;
+    elems[6].children[1].children[8].children[4].innerHTML = stuff.stats.bedwars.ultimate4.wlr || 0;
+    elems[6].children[1].children[8].children[5].innerHTML = stuff.stats.bedwars.castle.wlr || 0;
+    elems[6].children[1].children[8].children[6].innerHTML = stuff.stats.bedwars.voidless2.wlr || 0;
+    elems[6].children[1].children[8].children[7].innerHTML = stuff.stats.bedwars.voidless4.wlr || 0;
+    elems[6].children[1].children[8].children[8].innerHTML = stuff.stats.bedwars.armed2.wlr || 0;
+    elems[6].children[1].children[8].children[9].innerHTML = stuff.stats.bedwars.armed4.wlr || 0;
+    elems[6].children[1].children[8].children[10].innerHTML = stuff.stats.bedwars.lucky2.wlr || 0;
+    elems[6].children[1].children[8].children[11].innerHTML = stuff.stats.bedwars.lucky4.wlr || 0;
+    //kills
+    elems[6].children[1].children[9].children[1].innerHTML = stuff.stats.bedwars.rush2.bedsbroken || 0;
+    elems[6].children[1].children[9].children[2].innerHTML = stuff.stats.bedwars.rush4.bedsbroken || 0;
+    elems[6].children[1].children[9].children[3].innerHTML = stuff.stats.bedwars.ultimate2.bedsbroken || 0;
+    elems[6].children[1].children[9].children[4].innerHTML = stuff.stats.bedwars.ultimate4.bedsbroken || 0;
+    elems[6].children[1].children[9].children[5].innerHTML = stuff.stats.bedwars.castle.bedsbroken || 0;
+    elems[6].children[1].children[9].children[6].innerHTML = stuff.stats.bedwars.voidless2.bedsbroken || 0;
+    elems[6].children[1].children[9].children[7].innerHTML = stuff.stats.bedwars.voidless4.bedsbroken || 0;
+    elems[6].children[1].children[9].children[8].innerHTML = stuff.stats.bedwars.armed2.bedsbroken || 0;
+    elems[6].children[1].children[9].children[9].innerHTML = stuff.stats.bedwars.armed4.bedsbroken || 0;
+    elems[6].children[1].children[9].children[10].innerHTML = stuff.stats.bedwars.lucky2.bedsbroken || 0;
+    elems[6].children[1].children[9].children[11].innerHTML = stuff.stats.bedwars.lucky4.bedsbroken || 0;
+    //kills
+    elems[6].children[1].children[10].children[1].innerHTML = stuff.stats.bedwars.rush2.bedslost || 0;
+    elems[6].children[1].children[10].children[2].innerHTML = stuff.stats.bedwars.rush4.bedslost || 0;
+    elems[6].children[1].children[10].children[3].innerHTML = stuff.stats.bedwars.ultimate2.bedslost || 0;
+    elems[6].children[1].children[10].children[4].innerHTML = stuff.stats.bedwars.ultimate4.bedslost || 0;
+    elems[6].children[1].children[10].children[5].innerHTML = stuff.stats.bedwars.castle.bedslost || 0;
+    elems[6].children[1].children[10].children[6].innerHTML = stuff.stats.bedwars.voidless2.bedslost || 0;
+    elems[6].children[1].children[10].children[7].innerHTML = stuff.stats.bedwars.voidless4.bedslost || 0;
+    elems[6].children[1].children[10].children[8].innerHTML = stuff.stats.bedwars.armed2.bedslost || 0;
+    elems[6].children[1].children[10].children[9].innerHTML = stuff.stats.bedwars.armed4.bedslost || 0;
+    elems[6].children[1].children[10].children[10].innerHTML = stuff.stats.bedwars.lucky2.bedslost || 0;
+    elems[6].children[1].children[10].children[11].innerHTML = stuff.stats.bedwars.lucky4.bedslost || 0;
+    //kills
+    elems[6].children[1].children[11].children[1].innerHTML = stuff.stats.bedwars.rush2.bblr || 0;
+    elems[6].children[1].children[11].children[2].innerHTML = stuff.stats.bedwars.rush4.bblr || 0;
+    elems[6].children[1].children[11].children[3].innerHTML = stuff.stats.bedwars.ultimate2.bblr || 0;
+    elems[6].children[1].children[11].children[4].innerHTML = stuff.stats.bedwars.ultimate4.bblr || 0;
+    elems[6].children[1].children[11].children[5].innerHTML = stuff.stats.bedwars.castle.bblr || 0;
+    elems[6].children[1].children[11].children[6].innerHTML = stuff.stats.bedwars.voidless2.bblr || 0;
+    elems[6].children[1].children[11].children[7].innerHTML = stuff.stats.bedwars.voidless4.bblr || 0;
+    elems[6].children[1].children[11].children[8].innerHTML = stuff.stats.bedwars.armed2.bblr || 0;
+    elems[6].children[1].children[11].children[9].innerHTML = stuff.stats.bedwars.armed4.bblr || 0;
+    elems[6].children[1].children[11].children[10].innerHTML = stuff.stats.bedwars.lucky2.bblr || 0;
+    elems[6].children[1].children[11].children[11].innerHTML = stuff.stats.bedwars.lucky4.bblr || 0;
+    
 
   } else if (selected === "Skywars") {
+    const prefix = ranking(stuff.rank, stuff.pluscolor).map(arr => {
+      return `<span style="color: ${arr[1]}">${arr[0]}</span>`;
+
+    }).join('') + ` <span style="color: ${ranking(stuff.rank, stuff.pluscolor)[0][1]}">${stuff.name}</span>`;
+    let checkguild = stuff.guild.guild !== null ? ` <span style="color: ${colors[stuff.guild.guild.tagColor]}">[${stuff.guild.guild.tag}]</span>` : '';
     const elems = document.getElementById(selected).children;
-    elems[0].innerHTML = stuff.name + ` [${stuff.guild.guild.tag}] - Skywars`;
+    elems[0].innerHTML = prefix + checkguild + ' - Skywars';
     elems[2].firstElementChild.innerHTML = stuff.stats.skywars.coins;
     elems[3].firstElementChild.innerHTML = stuff.stats.skywars.level;
     elems[4].firstElementChild.innerHTML = stuff.stats.skywars.prestige;
     //kills
-    elems[5].children[1].firstElementChild.children[1].innerHTML = stuff.stats.skywars.solonormal.kills;
-    elems[5].children[1].firstElementChild.children[2].innerHTML = stuff.stats.skywars.soloinsane.kills;
-    elems[5].children[1].firstElementChild.children[3].innerHTML = stuff.stats.skywars.teamnormal.kills;
-    elems[5].children[1].firstElementChild.children[4].innerHTML = stuff.stats.skywars.teaminsane.kills;
-    elems[5].children[1].firstElementChild.children[5].innerHTML = stuff.stats.skywars.ranked.kills;
-    elems[5].children[1].firstElementChild.children[6].innerHTML = stuff.stats.skywars.overall.kills;
+    elems[5].children[1].firstElementChild.children[1].innerHTML = stuff.stats.skywars.solonormal.kills || 0;
+    elems[5].children[1].firstElementChild.children[2].innerHTML = stuff.stats.skywars.soloinsane.kills || 0;
+    elems[5].children[1].firstElementChild.children[3].innerHTML = stuff.stats.skywars.teamnormal.kills || 0;
+    elems[5].children[1].firstElementChild.children[4].innerHTML = stuff.stats.skywars.teaminsane.kills || 0;
+    elems[5].children[1].firstElementChild.children[5].innerHTML = stuff.stats.skywars.ranked.kills || 0;
+    elems[5].children[1].firstElementChild.children[6].innerHTML = stuff.stats.skywars.overall.kills || 0;
     //kills
-    elems[5].children[1].children[1].children[1].innerHTML = stuff.stats.skywars.solonormal.deaths;
-    elems[5].children[1].children[1].children[2].innerHTML = stuff.stats.skywars.soloinsane.deaths;
-    elems[5].children[1].children[1].children[3].innerHTML = stuff.stats.skywars.teamnormal.deaths;
-    elems[5].children[1].children[1].children[4].innerHTML = stuff.stats.skywars.teaminsane.deaths;
-    elems[5].children[1].children[1].children[5].innerHTML = stuff.stats.skywars.ranked.deaths;
-    elems[5].children[1].children[1].children[6].innerHTML = stuff.stats.skywars.overall.deaths;
+    elems[5].children[1].children[1].children[1].innerHTML = stuff.stats.skywars.solonormal.deaths || 0;
+    elems[5].children[1].children[1].children[2].innerHTML = stuff.stats.skywars.soloinsane.deaths || 0;
+    elems[5].children[1].children[1].children[3].innerHTML = stuff.stats.skywars.teamnormal.deaths || 0;
+    elems[5].children[1].children[1].children[4].innerHTML = stuff.stats.skywars.teaminsane.deaths || 0;
+    elems[5].children[1].children[1].children[5].innerHTML = stuff.stats.skywars.ranked.deaths || 0;
+    elems[5].children[1].children[1].children[6].innerHTML = stuff.stats.skywars.overall.deaths || 0;
     //kills
-    elems[5].children[1].children[2].children[1].innerHTML = stuff.stats.skywars.solonormal.kdr;
-    elems[5].children[1].children[2].children[2].innerHTML = stuff.stats.skywars.soloinsane.kdr;
-    elems[5].children[1].children[2].children[3].innerHTML = stuff.stats.skywars.teamnormal.kdr;
-    elems[5].children[1].children[2].children[4].innerHTML = stuff.stats.skywars.teaminsane.kdr;
-    elems[5].children[1].children[2].children[5].innerHTML = stuff.stats.skywars.ranked.kdr;
-    elems[5].children[1].children[2].children[6].innerHTML = stuff.stats.skywars.overall.kdr;
+    elems[5].children[1].children[2].children[1].innerHTML = stuff.stats.skywars.solonormal.kdr || 0;
+    elems[5].children[1].children[2].children[2].innerHTML = stuff.stats.skywars.soloinsane.kdr || 0;
+    elems[5].children[1].children[2].children[3].innerHTML = stuff.stats.skywars.teamnormal.kdr || 0;
+    elems[5].children[1].children[2].children[4].innerHTML = stuff.stats.skywars.teaminsane.kdr || 0;
+    elems[5].children[1].children[2].children[5].innerHTML = stuff.stats.skywars.ranked.kdr || 0;
+    elems[5].children[1].children[2].children[6].innerHTML = stuff.stats.skywars.overall.kdr || 0;
     //kills
-    elems[5].children[1].children[3].children[1].innerHTML = stuff.stats.skywars.solonormal.wins;
-    elems[5].children[1].children[3].children[2].innerHTML = stuff.stats.skywars.soloinsane.wins;
-    elems[5].children[1].children[3].children[3].innerHTML = stuff.stats.skywars.teamnormal.wins;
-    elems[5].children[1].children[3].children[4].innerHTML = stuff.stats.skywars.teaminsane.wins;
-    elems[5].children[1].children[3].children[5].innerHTML = stuff.stats.skywars.ranked.wins;
-    elems[5].children[1].children[3].children[6].innerHTML = stuff.stats.skywars.overall.wins;
+    elems[5].children[1].children[3].children[1].innerHTML = stuff.stats.skywars.solonormal.wins || 0;
+    elems[5].children[1].children[3].children[2].innerHTML = stuff.stats.skywars.soloinsane.wins || 0;
+    elems[5].children[1].children[3].children[3].innerHTML = stuff.stats.skywars.teamnormal.wins || 0;
+    elems[5].children[1].children[3].children[4].innerHTML = stuff.stats.skywars.teaminsane.wins || 0;
+    elems[5].children[1].children[3].children[5].innerHTML = stuff.stats.skywars.ranked.wins || 0;
+    elems[5].children[1].children[3].children[6].innerHTML = stuff.stats.skywars.overall.wins || 0;
     //kills
-    elems[5].children[1].children[4].children[1].innerHTML = stuff.stats.skywars.solonormal.losses;
-    elems[5].children[1].children[4].children[2].innerHTML = stuff.stats.skywars.soloinsane.losses;
-    elems[5].children[1].children[4].children[3].innerHTML = stuff.stats.skywars.teamnormal.losses;
-    elems[5].children[1].children[4].children[4].innerHTML = stuff.stats.skywars.teaminsane.losses;
-    elems[5].children[1].children[4].children[5].innerHTML = stuff.stats.skywars.ranked.losses;
-    elems[5].children[1].children[4].children[6].innerHTML = stuff.stats.skywars.overall.losses;
+    elems[5].children[1].children[4].children[1].innerHTML = stuff.stats.skywars.solonormal.losses || 0;
+    elems[5].children[1].children[4].children[2].innerHTML = stuff.stats.skywars.soloinsane.losses || 0;
+    elems[5].children[1].children[4].children[3].innerHTML = stuff.stats.skywars.teamnormal.losses || 0;
+    elems[5].children[1].children[4].children[4].innerHTML = stuff.stats.skywars.teaminsane.losses || 0;
+    elems[5].children[1].children[4].children[5].innerHTML = stuff.stats.skywars.ranked.losses || 0;
+    elems[5].children[1].children[4].children[6].innerHTML = stuff.stats.skywars.overall.losses || 0;
     //kills
-    elems[5].children[1].children[5].children[1].innerHTML = stuff.stats.skywars.solonormal.wlr;
-    elems[5].children[1].children[5].children[2].innerHTML = stuff.stats.skywars.soloinsane.wlr;
-    elems[5].children[1].children[5].children[3].innerHTML = stuff.stats.skywars.teamnormal.wlr;
-    elems[5].children[1].children[5].children[4].innerHTML = stuff.stats.skywars.teaminsane.wlr;
-    elems[5].children[1].children[5].children[5].innerHTML = stuff.stats.skywars.ranked.wlr;
-    elems[5].children[1].children[5].children[6].innerHTML = stuff.stats.skywars.overall.wlr;
+    elems[5].children[1].children[5].children[1].innerHTML = stuff.stats.skywars.solonormal.wlr || 0;
+    elems[5].children[1].children[5].children[2].innerHTML = stuff.stats.skywars.soloinsane.wlr || 0;
+    elems[5].children[1].children[5].children[3].innerHTML = stuff.stats.skywars.teamnormal.wlr || 0;
+    elems[5].children[1].children[5].children[4].innerHTML = stuff.stats.skywars.teaminsane.wlr || 0;
+    elems[5].children[1].children[5].children[5].innerHTML = stuff.stats.skywars.ranked.wlr || 0;
+    elems[5].children[1].children[5].children[6].innerHTML = stuff.stats.skywars.overall.wlr || 0;
   } else if (selected === "Duels") {
+    const prefix = ranking(stuff.rank, stuff.pluscolor).map(arr => {
+      return `<span style="color: ${arr[1]}">${arr[0]}</span>`;
+
+    }).join('') + ` <span style="color: ${ranking(stuff.rank, stuff.pluscolor)[0][1]}">${stuff.name}</span>`;
     const elems = document.getElementById(selected).children;
-    elems[0].innerHTML = stuff.name + ` [${stuff.guild.guild.tag}] - Duels`;
+    let checkguild = stuff.guild.guild !== null ? ` <span style="color: ${colors[stuff.guild.guild.tagColor]}">[${stuff.guild.guild.tag}]</span>` : '';
+    elems[0].innerHTML = prefix + checkguild + ' - Duels';
     elems[2].firstElementChild.innerHTML = stuff.stats.duels.coins;
     elems[3].firstElementChild.innerHTML = stuff.stats.duels.winstreak;
     elems[4].firstElementChild.innerHTML = stuff.stats.duels.title;
@@ -261,6 +524,30 @@ const updateInterface = (stuff) => {
     elems[5].children[1].children[11].children[4].innerHTML = stuff.stats.duels.overall.wins || 0;
     elems[5].children[1].children[11].children[5].innerHTML = stuff.stats.duels.overall.losses || 0;
     elems[5].children[1].children[11].children[6].innerHTML = stuff.stats.duels.overall.wlr || 0;
+  } else if (selected === "Guild/Friends") {
+    const prefix = ranking(stuff.rank, stuff.pluscolor).map(arr => {
+      return `<span style="color: ${arr[1]}">${arr[0]}</span>`;
+
+    }).join('') + ` <span style="color: ${ranking(stuff.rank, stuff.pluscolor)[0][1]}">${stuff.name}</span>`;
+    let checkguild = stuff.guild.guild !== null ? ` <span style="color: ${colors[stuff.guild.guild.tagColor]}">[${stuff.guild.guild.tag}]</span>` : '';
+    const elems = document.getElementById(selected).children;
+    elems[0].innerHTML = prefix + checkguild + ' - Guild & Friends';
+    if (stuff.guild.guild !== null) {
+      elems[2].firstElementChild.innerHTML = stuff.guild.guild.name;
+      elems[3].firstElementChild.innerHTML = stuff.guild.guild.exp;
+      elems[4].firstElementChild.innerHTML = new Date(stuff.guild.guild.created);
+    } else {
+      
+      elems[2].style.display = 'none';
+      elems[3].style.display = 'none';
+      elems[4].style.display = 'none';
+      elems[5].style.display = 'none';
+      elems[6].style.display = 'none';
+      elems[7].style.display = 'none';
+    }
+    elems[6].innerHTML += ``;
+    elems[8].firstElementChild.innerHTML = stuff.friends.records.length;
+    
   }
 };
 
@@ -346,6 +633,8 @@ function updateSelected(type) {
 
 function setData(d, func) {
   let rank1;
+  let pluscolor = d.rankPlusColor || 'gold';
+  
   if (d.rank && d.rank !== 'NORMAL') {
     rank1 = d.rank
   } else if (d.monthlyPackageRank && d.monthlyPackageRank !== "NONE") {
@@ -358,9 +647,11 @@ function setData(d, func) {
     rank1 = 'NON'
   }
 
+
   data = {
     name: d.displayname,
     rank: rank1 === "SUPERSTAR" ? "MVP_PLUS_PLUS" : rank1,
+    pluscolor: pluscolor,
     karma: d.karma,
     lastLogin: new Date(d.lastLogin),
     uuid: d.uuid,
@@ -454,6 +745,160 @@ function setData(d, func) {
           bedsbroken: d.stats.Bedwars.beds_broken_bedwars,
           bedslost: d.stats.Bedwars.beds_lost_bedwars,
           bblr: (d.stats.Bedwars.beds_broken_bedwars / d.stats.Bedwars.beds_lost_bedwars).toFixed(2)
+        },
+        rush2: {
+          kills: d.stats.Bedwars.eight_two_rush_kills_bedwars,
+          deaths: d.stats.Bedwars.eight_two_rush_deaths_bedwars,
+          finals: d.stats.Bedwars.eight_two_rush_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.eight_two_rush_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.eight_two_rush_kills_bedwars / d.stats.Bedwars.eight_two_rush_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.eight_two_rush_final_kills_bedwars / d.stats.Bedwars.eight_two_rush_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.eight_two_rush_wins_bedwars,
+          losses: d.stats.Bedwars.eight_two_rush_losses_bedwars,
+          wlr: (d.stats.Bedwars.eight_two_rush_wins_bedwars / d.stats.Bedwars.eight_two_rush_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.eight_two_rush_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.eight_two_rush_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.eight_two_rush_beds_broken_bedwars / d.stats.Bedwars.eight_two_rush_beds_lost_bedwars).toFixed(2)
+        },
+        rush4: {
+          kills: d.stats.Bedwars.four_four_rush_kills_bedwars,
+          deaths: d.stats.Bedwars.four_four_rush_deaths_bedwars,
+          finals: d.stats.Bedwars.four_four_rush_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.four_four_rush_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.four_four_rush_kills_bedwars / d.stats.Bedwars.four_four_rush_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.four_four_rush_final_kills_bedwars / d.stats.Bedwars.four_four_rush_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.four_four_rush_wins_bedwars,
+          losses: d.stats.Bedwars.four_four_rush_losses_bedwars,
+          wlr: (d.stats.Bedwars.four_four_rush_wins_bedwars / d.stats.Bedwars.four_four_rush_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.four_four_rush_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.four_four_rush_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.four_four_rush_beds_broken_bedwars / d.stats.Bedwars.four_four_rush_beds_lost_bedwars).toFixed(2)
+        },
+        ultimate2: {
+          kills: d.stats.Bedwars.eight_two_ultimate_kills_bedwars,
+          deaths: d.stats.Bedwars.eight_two_ultimate_deaths_bedwars,
+          finals: d.stats.Bedwars.eight_two_ultimate_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.eight_two_ultimate_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.eight_two_ultimate_kills_bedwars / d.stats.Bedwars.eight_two_ultimate_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.eight_two_ultimate_final_kills_bedwars / d.stats.Bedwars.eight_two_ultimate_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.eight_two_ultimate_wins_bedwars,
+          losses: d.stats.Bedwars.eight_two_ultimate_losses_bedwars,
+          wlr: (d.stats.Bedwars.eight_two_ultimate_wins_bedwars / d.stats.Bedwars.eight_two_ultimate_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.eight_two_ultimate_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.eight_two_ultimate_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.eight_two_ultimate_beds_broken_bedwars / d.stats.Bedwars.eight_two_ultimate_beds_lost_bedwars).toFixed(2)
+        },
+        ultimate4: {
+          kills: d.stats.Bedwars.four_four_ultimate_kills_bedwars,
+          deaths: d.stats.Bedwars.four_four_ultimate_deaths_bedwars,
+          finals: d.stats.Bedwars.four_four_ultimate_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.four_four_ultimate_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.four_four_ultimate_kills_bedwars / d.stats.Bedwars.four_four_ultimate_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.four_four_ultimate_final_kills_bedwars / d.stats.Bedwars.four_four_ultimate_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.four_four_ultimate_wins_bedwars,
+          losses: d.stats.Bedwars.four_four_ultimate_losses_bedwars,
+          wlr: (d.stats.Bedwars.four_four_ultimate_wins_bedwars / d.stats.Bedwars.four_four_ultimate_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.four_four_ultimate_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.four_four_ultimate_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.four_four_ultimate_beds_broken_bedwars / d.stats.Bedwars.four_four_ultimate_beds_lost_bedwars).toFixed(2)
+        },
+        castle: {
+          kills: d.stats.Bedwars.castle_kills_bedwars,
+          deaths: d.stats.Bedwars.castle_deaths_bedwars,
+          finals: d.stats.Bedwars.castle_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.castle_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.castle_kills_bedwars / d.stats.Bedwars.castle_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.castle_final_kills_bedwars / d.stats.Bedwars.castle_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.castle_wins_bedwars,
+          losses: d.stats.Bedwars.castle_losses_bedwars,
+          wlr: (d.stats.Bedwars.castle_wins_bedwars / d.stats.Bedwars.castle_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.castle_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.castle_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.castle_beds_broken_bedwars / d.stats.Bedwars.castle_beds_lost_bedwars).toFixed(2)
+        },
+        voidless2: {
+          kills: d.stats.Bedwars.eight_two_voidless_kills_bedwars,
+          deaths: d.stats.Bedwars.eight_two_voidless_deaths_bedwars,
+          finals: d.stats.Bedwars.eight_two_voidless_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.eight_two_voidless_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.eight_two_voidless_kills_bedwars / d.stats.Bedwars.eight_two_voidless_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.eight_two_voidless_final_kills_bedwars / d.stats.Bedwars.eight_two_voidless_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.eight_two_voidless_wins_bedwars,
+          losses: d.stats.Bedwars.eight_two_voidless_losses_bedwars,
+          wlr: (d.stats.Bedwars.eight_two_voidless_wins_bedwars / d.stats.Bedwars.eight_two_voidless_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.eight_two_voidless_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.eight_two_voidless_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.eight_two_voidless_beds_broken_bedwars / d.stats.Bedwars.eight_two_voidless_beds_lost_bedwars).toFixed(2)
+        },
+        voidless4: {
+          kills: d.stats.Bedwars.four_four_voidless_kills_bedwars,
+          deaths: d.stats.Bedwars.four_four_voidless_deaths_bedwars,
+          finals: d.stats.Bedwars.four_four_voidless_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.four_four_voidless_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.four_four_voidless_kills_bedwars / d.stats.Bedwars.four_four_voidless_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.four_four_voidless_final_kills_bedwars / d.stats.Bedwars.four_four_voidless_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.four_four_voidless_wins_bedwars,
+          losses: d.stats.Bedwars.four_four_voidless_losses_bedwars,
+          wlr: (d.stats.Bedwars.four_four_voidless_wins_bedwars / d.stats.Bedwars.four_four_voidless_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.four_four_voidless_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.four_four_voidless_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.four_four_voidless_beds_broken_bedwars / d.stats.Bedwars.four_four_voidless_beds_lost_bedwars).toFixed(2)
+        },
+        armed2: {
+          kills: d.stats.Bedwars.eight_two_armed_kills_bedwars,
+          deaths: d.stats.Bedwars.eight_two_armed_deaths_bedwars,
+          finals: d.stats.Bedwars.eight_two_armed_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.eight_two_armed_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.eight_two_armed_kills_bedwars / d.stats.Bedwars.eight_two_armed_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.eight_two_armed_final_kills_bedwars / d.stats.Bedwars.eight_two_armed_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.eight_two_armed_wins_bedwars,
+          losses: d.stats.Bedwars.eight_two_armed_losses_bedwars,
+          wlr: (d.stats.Bedwars.eight_two_armed_wins_bedwars / d.stats.Bedwars.eight_two_armed_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.eight_two_armed_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.eight_two_armed_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.eight_two_armed_beds_broken_bedwars / d.stats.Bedwars.eight_two_armed_beds_lost_bedwars).toFixed(2)
+        },
+        armed4: {
+          kills: d.stats.Bedwars.four_four_armed_kills_bedwars,
+          deaths: d.stats.Bedwars.four_four_armed_deaths_bedwars,
+          finals: d.stats.Bedwars.four_four_armed_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.four_four_armed_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.four_four_armed_kills_bedwars / d.stats.Bedwars.four_four_armed_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.four_four_armed_final_kills_bedwars / d.stats.Bedwars.four_four_armed_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.four_four_armed_wins_bedwars,
+          losses: d.stats.Bedwars.four_four_armed_losses_bedwars,
+          wlr: (d.stats.Bedwars.four_four_armed_wins_bedwars / d.stats.Bedwars.four_four_armed_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.four_four_armed_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.four_four_armed_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.four_four_armed_beds_broken_bedwars / d.stats.Bedwars.four_four_armed_beds_lost_bedwars).toFixed(2)
+        },
+        lucky2: {
+          kills: d.stats.Bedwars.eight_two_lucky_kills_bedwars,
+          deaths: d.stats.Bedwars.eight_two_lucky_deaths_bedwars,
+          finals: d.stats.Bedwars.eight_two_lucky_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.eight_two_lucky_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.eight_two_lucky_kills_bedwars / d.stats.Bedwars.eight_two_lucky_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.eight_two_lucky_final_kills_bedwars / d.stats.Bedwars.eight_two_lucky_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.eight_two_lucky_wins_bedwars,
+          losses: d.stats.Bedwars.eight_two_lucky_losses_bedwars,
+          wlr: (d.stats.Bedwars.eight_two_lucky_wins_bedwars / d.stats.Bedwars.eight_two_lucky_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.eight_two_lucky_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.eight_two_lucky_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.eight_two_lucky_beds_broken_bedwars / d.stats.Bedwars.eight_two_lucky_beds_lost_bedwars).toFixed(2)
+        },
+        lucky4: {
+          kills: d.stats.Bedwars.four_four_lucky_kills_bedwars,
+          deaths: d.stats.Bedwars.four_four_lucky_deaths_bedwars,
+          finals: d.stats.Bedwars.four_four_lucky_final_kills_bedwars,
+          fdeaths: d.stats.Bedwars.four_four_lucky_final_deaths_bedwars,
+          kdr: (d.stats.Bedwars.four_four_lucky_kills_bedwars / d.stats.Bedwars.four_four_lucky_deaths_bedwars).toFixed(2),
+          fkdr: (d.stats.Bedwars.four_four_lucky_final_kills_bedwars / d.stats.Bedwars.four_four_lucky_final_deaths_bedwars).toFixed(2),
+          wins: d.stats.Bedwars.four_four_lucky_wins_bedwars,
+          losses: d.stats.Bedwars.four_four_lucky_losses_bedwars,
+          wlr: (d.stats.Bedwars.four_four_lucky_wins_bedwars / d.stats.Bedwars.four_four_lucky_losses_bedwars).toFixed(2),
+          bedsbroken: d.stats.Bedwars.four_four_lucky_beds_broken_bedwars,
+          bedslost: d.stats.Bedwars.four_four_lucky_beds_lost_bedwars,
+          bblr: (d.stats.Bedwars.four_four_lucky_beds_broken_bedwars / d.stats.Bedwars.four_four_lucky_beds_lost_bedwars).toFixed(2)
         }
       },
       skywars: {
@@ -619,19 +1064,19 @@ function setData(d, func) {
   func();
 }
 
-fetch(`https://api.hypixel.net/player?key=d5db2401-3d43-4ece-a681-a013df180a3c&name=${name}`).then((res, err) => res.json()).then(data1 => {
+fetch(`https://api.hypixel.net/player?key=${key}&name=${name}`).then((res, err) => res.json()).then(data1 => {
   //console.log(data1);
   if (data1.player !== null) {
     setData(data1.player, () => {
-      fetch(`https://api.hypixel.net/status?key=d5db2401-3d43-4ece-a681-a013df180a3c&uuid=${data.uuid}`).then((res, err) => res.json().then(response => {
+      fetch(`https://api.hypixel.net/status?key=${key}&uuid=${data.uuid}`).then((res, err) => res.json().then(response => {
         data.status = response.session;
-        fetch(`https://api.hypixel.net/friends?key=d5db2401-3d43-4ece-a681-a013df180a3c&uuid=${data.uuid}`).then((res, err) => res.json()).then(friends => {
-          data.friends = friends.records.length;
-          fetch(`https://api.hypixel.net/guild?key=d5db2401-3d43-4ece-a681-a013df180a3c&player=${data.uuid}`).then((res, err) => res.json()).then(guild => {
+        fetch(`https://api.hypixel.net/friends?key=${key}&uuid=${data.uuid}`).then((res, err) => res.json()).then(friends => {
+          data.friends = friends;
+          fetch(`https://api.hypixel.net/guild?key=${key}&player=${data.uuid}`).then((res, err) => res.json()).then(guild => {
             //console.log(guild);
             data.guild = guild;
+          
             updateSelected('Network');
-
           });
         });
       }))
@@ -645,10 +1090,3 @@ fetch(`https://api.hypixel.net/player?key=d5db2401-3d43-4ece-a681-a013df180a3c&n
 }).catch(err => console.log(err))
 
 
-//Bonus SHIT
-/* 
-1. add || 0
-2. add rank colors, skins, font
-3. add dream stats
-4. add extra skyblock shit
-*/
